@@ -2,15 +2,84 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import styles from "./editor.module.css"
 
+// Type for query history items
+interface QueryHistoryItem {
+  id: string
+  query: string
+  timestamp: Date
+  executionTime?: number
+  rowCount?: number
+}
+
+// Type for example queries
+interface ExampleQuery {
+  id: number
+  name: string
+  description: string
+  query: string
+}
+
 export default function SQLEditor() {
-  const [query, setQuery] = useState("SELECT * FROM products LIMIT 10;")
+  // Sample example queries
+  const exampleQueries: ExampleQuery[] = [
+    {
+      id: 1,
+      name: "Basic Select",
+      description: "Get the first 10 products",
+      query: "SELECT * FROM products;"
+    },
+    {
+      id: 2,
+      name: "Products by Category",
+      description: "Count products per category with sorting",
+      query: "SELECT c.category_name, COUNT(p.product_id) as product_count\nFROM categories c\nJOIN products p ON c.category_id = p.category_id\nGROUP BY c.category_name\nORDER BY product_count DESC;"
+    },
+    {
+      id: 3,
+      name: "Count number of products",
+      description: "Count total number of products in the table",
+      query: "select count (*) from products;"
+    },
+    {
+      id: 4,
+      name: "Revenue Analysis",
+      description: "Calculate monthly revenue for the current year",
+      query: "SELECT\n  EXTRACT(MONTH FROM order_date) as month,\n  SUM(unit_price * quantity * (1 - discount)) as revenue\nFROM order_details od\nJOIN orders o ON od.order_id = o.order_id\nWHERE EXTRACT(YEAR FROM order_date) = EXTRACT(YEAR FROM CURRENT_DATE)\nGROUP BY month\nORDER BY month;"
+    }
+  ]
+
+  const [query, setQuery] = useState(exampleQueries[0].query)
   const [results, setResults] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [queryHistory, setQueryHistory] = useState<QueryHistoryItem[]>([])
+
+  // Load query history from localStorage on component mount
+  useEffect(() => {
+    const savedHistory = localStorage.getItem("queryHistory")
+    if (savedHistory) {
+      try {
+        const parsedHistory = JSON.parse(savedHistory)
+        // Convert string timestamps back to Date objects
+        const formattedHistory = parsedHistory.map((item: any) => ({
+          ...item,
+          timestamp: new Date(item.timestamp),
+        }))
+        setQueryHistory(formattedHistory)
+      } catch (e) {
+        console.error("Failed to parse query history:", e)
+      }
+    }
+  }, [])
+
+  // Save query history to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("queryHistory", JSON.stringify(queryHistory))
+  }, [queryHistory])
 
   const handleQueryChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setQuery(e.target.value)
@@ -37,11 +106,35 @@ export default function SQLEditor() {
       }
 
       setResults(data)
+
+      // Add to query history
+      const historyItem: QueryHistoryItem = {
+        id: Date.now().toString(),
+        query: query,
+        timestamp: new Date(),
+        executionTime: data.executionTime,
+        rowCount: data.rows ? data.rows.length : 0,
+      }
+
+      setQueryHistory((prev) => [historyItem, ...prev.slice(0, 19)]) // Keep only the 20 most recent queries
     } catch (err) {
       setError(err instanceof Error ? err.message : "An unknown error occurred")
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const loadQueryFromHistory = (historyItem: QueryHistoryItem) => {
+    setQuery(historyItem.query)
+  }
+
+  const clearHistory = () => {
+    setQueryHistory([])
+    localStorage.removeItem("queryHistory")
+  }
+
+  const setExampleQuery = (exampleQuery: string) => {
+    setQuery(exampleQuery)
   }
 
   return (
@@ -70,29 +163,60 @@ export default function SQLEditor() {
             spellCheck={false}
           />
 
-          <div className={styles.examples}>
-            <h3>Example Queries:</h3>
-            <ul>
-              <li onClick={() => setQuery("SELECT * FROM products LIMIT 10;")}>SELECT * FROM products LIMIT 10;</li>
-              <li
-                onClick={() =>
-                  setQuery(
-                    "SELECT c.category_name, COUNT(p.product_id) as product_count\nFROM categories c\nJOIN products p ON c.category_id = p.category_id\nGROUP BY c.category_name\nORDER BY product_count DESC;",
-                  )
-                }
-              >
-                Count products by category
-              </li>
-              <li
-                onClick={() =>
-                  setQuery(
-                    "SELECT c.company_name, COUNT(o.order_id) as order_count\nFROM customers c\nJOIN orders o ON c.customer_id = o.customer_id\nGROUP BY c.company_name\nORDER BY order_count DESC\nLIMIT 5;",
-                  )
-                }
-              >
-                Top 5 customers by order count
-              </li>
-            </ul>
+          <div className={styles.sideBySideContainer}>
+            {/* Example Queries Section */}
+            <div className={styles.examplesSection}>
+              <div className={styles.sectionHeader}>
+                <h3>Example Queries</h3>
+              </div>
+              <div className={styles.examplesList}>
+                {exampleQueries.map((example) => (
+                  <div 
+                    key={example.id} 
+                    className={styles.exampleItem}
+                    onClick={() => setExampleQuery(example.query)}
+                  >
+                    <div className={styles.exampleTitle}>{example.name}</div>
+                    <div className={styles.exampleDescription}>{example.description}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Query History Section */}
+            <div className={styles.historySection}>
+              <div className={styles.historyHeader}>
+                <h3>Query History</h3>
+                {queryHistory.length > 0 && (
+                  <button className={styles.clearHistoryButton} onClick={clearHistory}>
+                    Clear History
+                  </button>
+                )}
+              </div>
+
+              {queryHistory.length === 0 ? (
+                <p className={styles.noHistory}>No query history yet. Execute a query to see it here.</p>
+              ) : (
+                <div className={styles.historyList}>
+                  {queryHistory.map((historyItem) => (
+                    <div
+                      key={historyItem.id}
+                      className={styles.historyItem}
+                      onClick={() => loadQueryFromHistory(historyItem)}
+                    >
+                      <div className={styles.historyQuery}>
+                        {historyItem.query.length > 60 ? historyItem.query.substring(0, 60) + "..." : historyItem.query}
+                      </div>
+                      <div className={styles.historyMeta}>
+                        <span>{historyItem.timestamp.toLocaleTimeString()}</span>
+                        <span>{historyItem.executionTime}ms</span>
+                        <span>{historyItem.rowCount} rows</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -149,4 +273,3 @@ export default function SQLEditor() {
     </div>
   )
 }
-
