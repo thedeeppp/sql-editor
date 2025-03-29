@@ -57,6 +57,21 @@
   color: #333;
 }
 
+.queryControls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.querySelector {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: white;
+  min-width: 200px;
+}
+
 .executeButton {
   background-color: #0070f3;
   color: white;
@@ -90,42 +105,133 @@
   resize: vertical;
 }
 
-.examples {
-  background-color: #f5f5f5;
-  padding: 1rem;
-  border-radius: 4px;
+/* Side by Side Container for Examples and History */
+.sideBySideContainer {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
 }
 
-.examples h3 {
-  margin-top: 0;
-  margin-bottom: 0.5rem;
-  font-size: 1rem;
+/* Common section styling */
+.examplesSection,
+.historySection {
+  flex: 1;
+  border: 1px solid #eaeaea;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.sectionHeader,
+.historyHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.sectionHeader h3,
+.historyHeader h3 {
+  margin: 0;
+  font-size: 1.1rem;
   color: #333;
 }
 
-.examples ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+/* Example Queries Section Styles */
+.examplesList {
+  max-height: 300px;
+  overflow-y: auto;
 }
 
-.examples li {
-  padding: 0.5rem;
-  margin-bottom: 0.5rem;
-  background-color: #e9e9e9;
-  border-radius: 4px;
-  font-family: monospace;
+.exampleItem {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #eaeaea;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.exampleItem:last-child {
+  border-bottom: none;
+}
+
+.exampleItem:hover {
+  background-color: #f0f8ff;
+}
+
+.exampleTitle {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: #0070f3;
+}
+
+.exampleDescription {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+/* History Section Styles */
+.clearHistoryButton {
+  background: none;
+  border: none;
+  color: #0070f3;
   font-size: 0.9rem;
   cursor: pointer;
+  padding: 0.25rem 0.5rem;
+}
+
+.clearHistoryButton:hover {
+  text-decoration: underline;
+}
+
+.noHistory {
+  padding: 1rem;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+
+.historyList {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.historyItem {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #eaeaea;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.historyItem:last-child {
+  border-bottom: none;
+}
+
+.historyItem:hover {
+  background-color: #f9f9f9;
+}
+
+.historyQuery {
+  font-family: monospace;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.examples li:hover {
-  background-color: #ddd;
+.historyMeta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.8rem;
+  color: #666;
 }
 
+.historyMeta span {
+  display: inline-block;
+}
+
+/* Results Section Styles */
 .resultsContainer {
   display: flex;
   flex-direction: column;
@@ -218,8 +324,25 @@
     gap: 1rem;
   }
 
+  .queryControls {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .querySelector {
+    width: 100%;
+  }
+
   .executeButton {
     width: 100%;
   }
-}
 
+  .sideBySideContainer {
+    flex-direction: column;
+  }
+
+  .historyMeta {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}
