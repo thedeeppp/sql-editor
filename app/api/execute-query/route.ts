@@ -23,6 +23,48 @@ const TABLES = [
 // Cache for loaded tables
 const tableCache: Record<string, any[]> = {}
 
+// Initialize AlaSQL with date functions
+function initializeAlaSql() {
+  // Add custom date functions if they don't exist
+  if (!alasql.fn.MONTH) {
+    alasql.fn.MONTH = (x: unknown) => {
+      const date = new Date(x as string)
+      return date.getMonth() + 1 // JavaScript months are 0-indexed
+    }
+  }
+
+  if (!alasql.fn.YEAR) {
+    alasql.fn.YEAR = (x: unknown) => {
+      const date = new Date(x as string)
+      return date.getFullYear()
+    }
+  }
+
+  if (!alasql.fn.NOW) {
+    alasql.fn.NOW = () => new Date()
+  }
+
+  if (!alasql.fn.DAY) {
+    alasql.fn.DAY = (x: unknown) => {
+      if (typeof x === "string") {
+        const date = new Date(x)
+        return date.getDate()
+      }
+      throw new Error("Invalid input type for DAY function")
+    }
+  }
+
+  if (!alasql.fn.QUARTER) {
+    alasql.fn.QUARTER = (x: unknown) => {
+      if (typeof x === "string") {
+        const date = new Date(x)
+        return Math.floor(date.getMonth() / 3) + 1
+      }
+      throw new Error("Invalid input type for QUARTER function")
+    }
+  }
+}
+
 // Function to download a file from a URL
 async function downloadFile(url: string): Promise<string> {
   const response = await fetch(url)
@@ -69,6 +111,10 @@ async function loadTable(tableName: string): Promise<any[]> {
 
 // Initialize AlaSQL with all tables
 async function initializeDatabase(): Promise<void> {
+  // Initialize AlaSQL with custom functions
+  initializeAlaSql()
+
+  // Load all tables
   for (const table of TABLES) {
     await loadTable(table)
   }

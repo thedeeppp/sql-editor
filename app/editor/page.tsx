@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import styles from "./editor.module.css"
@@ -46,9 +45,9 @@ export default function SQLEditor() {
     },
     {
       id: 4,
-      name: "Revenue Analysis",
-      description: "Calculate monthly revenue for the current year",
-      query: "SELECT\n  EXTRACT(MONTH FROM order_date) as month,\n  SUM(unit_price * quantity * (1 - discount)) as revenue\nFROM order_details od\nJOIN orders o ON od.order_id = o.order_id\nWHERE EXTRACT(YEAR FROM order_date) = EXTRACT(YEAR FROM CURRENT_DATE)\nGROUP BY month\nORDER BY month;"
+      name: "Order table (long version)",
+      description: "show all orders from order table",
+      query: "SELECT * FROM orders;"
     }
   ]
 
