@@ -39,9 +39,3 @@ These metrics were measured using the built-in performance measurement tools in 
 1. Used the Performance tab in Chrome DevTools to capture load metrics
 2. Implemented custom performance markers using the Performance API:
 
-```javascript
-// Example of performance measurement in the code
-performance.mark('query-execution-start');
-// Execute query
-performance.mark('query-execution-end');
-performance.measure('query-execution', 'query-execution-start', 'query-execution-end');
